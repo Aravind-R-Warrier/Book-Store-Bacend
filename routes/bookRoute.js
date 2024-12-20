@@ -57,30 +57,36 @@ return response.status(200).json(book)
 })
 
 //update a book
-router.put('/:id',async(request,response)=>{
+router.put('/:id', async (request, response) => {
     try {
-       if(
-        !request.body.title ||
-        !request.body.author ||
-        !request.body.publishYear
-       ){
-        return response.status(400).send({
-            message: 'send all required fields:title,author,publishYear'
-        })
-       }
-       const{id}=request.params
-       const result=await Book.findByIdAndUpdate(id,request.body)
-       if(!result){
-        return response.status(404).send({message:'book not found'})
-       }else{
-        return response.status(200).send({message:'book updated successfully'})
-       }
+        // Check if required fields are provided in the request body
+        const { title, author, publishYear } = request.body;
+        if (!title || !author || !publishYear) {
+            return response.status(400).send({
+                message: 'All required fields are not provided: title, author, publishYear'
+            });
+        }
+
+        const { id } = request.params;
+
+        // Find and update the book, returning the updated document
+        const result = await Book.findByIdAndUpdate(id, request.body, { new: true });
+
+        if (!result) {
+            return response.status(404).send({ message: 'Book not found' });
+        } else {
+            return response.status(200).send({
+                message: 'Book updated successfully',
+                updatedBook: result // Returning the updated book object
+            });
+        }
 
     } catch (error) {
-        console.log(error)
-        response.status(500).send({message:error.message})
+        console.log(error);
+        return response.status(500).send({ message: error.message });
     }
-})
+});
+
 
 //delete a book
 router.delete('/:id',async(request,response)=>{
